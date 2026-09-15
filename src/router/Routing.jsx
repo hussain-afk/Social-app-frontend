@@ -5,15 +5,15 @@ import RootLayout from '../ui/pages/user/RootLayout';
 import Home from '../ui/pages/user/Home';
 import UserAuthPage from '../ui/pages/user/UserAuthPage';
 import ProfilePage from '../ui/pages/user/ProfilePage';
+import CreatePostPage from '../ui/pages/user/CreatePostPage';
 // context 
 import { MainContext } from '../context/main.context';
-import CreatePostPage from '../ui/pages/user/CreatePostPage';
 
 function Routing() {
-  const { user, loading } = useContext(MainContext); // 👈 loading state bhi nikal li
+  const { user, loading } = useContext(MainContext);
 
+  // 1. Protected Routes (Agar user nahi hai toh login par bhejo)
   const ProtectedRoutes = ({ children }) => {
-    // 1. Agar app abhi data fetch kar rahi hai, toh blank ya loading spinner dikhayein
     if (loading) {
       return (
         <div className="flex h-screen w-full items-center justify-center bg-[#08080a] text-white">
@@ -25,11 +25,29 @@ function Routing() {
       );
     }
 
-    // 2. Agar loading khatam ho chuki hai aur user null hai, tab login par bhejain
     if (!user) {
       return <Navigate to="/" replace />;
     }
-    if(user){
+
+    // ❌ Purana `if(user) return <Navigate to="/user"/>` yahan se hata diya hai taake loop na bane
+
+    return children;
+  };
+
+  // 2. Public / Auth Route (Agar user PEHLE SE logged-in hai, toh auth page na dikhao, seedha /user par bhejo)
+  const PublicRoute = ({ children }) => {
+    if (loading) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-[#08080a] text-white">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+            <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Verifying session...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (user) {
       return <Navigate to="/user" replace />;
     }
 
@@ -38,7 +56,16 @@ function Routing() {
 
   return (
     <Routes>
-      <Route path="/" element={<UserAuthPage />} />
+      {/* Root path par PublicRoute laga di */}
+      <Route 
+        path="/" 
+        element={
+          <PublicRoute>
+            <UserAuthPage />
+          </PublicRoute>
+        } 
+      />
+
       <Route path="/user" element={<RootLayout />}>
         <Route 
           index 
