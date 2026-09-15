@@ -4,7 +4,7 @@ import { MainContext } from '../context/main.context.jsx';
 import toast from 'react-hot-toast';
 
 const usePosts = () => {
-    const { setLoading, fetchAllPosts, fetchAllUserPosts } = useContext(MainContext);
+    const { setLoading, initializeApp } = useContext(MainContext);
 
     const addComment = async (postId, commentText) => {
         try {
@@ -12,10 +12,8 @@ const usePosts = () => {
             const updatedPost = await addCommentOnPost(postId, commentText);
             
             // Feed aur user posts dono ko fresh data ke liye sync kar dein
-            await Promise.all([
-                fetchAllPosts(),
-                fetchAllUserPosts ? fetchAllUserPosts() : Promise.resolve()
-            ]);
+            await initializeApp(); // Ye function context mein define hai jo dono fetchAllPosts aur fetchAllUserPosts ko call karega
+            toast.success("Comment added successfully!");
 
             return updatedPost;
         } catch (error) {
