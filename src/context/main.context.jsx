@@ -1,12 +1,12 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState, useCallback } from 'react';
 import { getAllPosts, getAllUserPosts } from '../api/posts.api.js';
 import { getCurrentUser } from '../api/auth.api.js';
 
 export const MainContext = createContext();
 
 const MainContextProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true); // Initial load ke liye true rakhna behtar hai
+    const [user, setUserState] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [allPosts, setAllPosts] = useState([]);
     const [allUserPosts, setAllUserPosts] = useState([]);
 
@@ -24,9 +24,10 @@ const MainContextProvider = ({ children }) => {
     const fetchCurrentUser = async () => {
         try {
             const currentUser = await getCurrentUser();
-            setUser(currentUser || null);
+            setUserState(currentUser || null);
         } catch (error) {
             console.error("Error fetching current user:", error);
+            setUserState(null);
         }
     };
 
@@ -37,6 +38,7 @@ const MainContextProvider = ({ children }) => {
             setAllUserPosts(userPosts || []);
         } catch (error) {
             console.error("Error fetching user posts:", error);
+            setAllUserPosts([]);
         }
     };
 
@@ -44,7 +46,6 @@ const MainContextProvider = ({ children }) => {
     const initializeApp = async () => {
         setLoading(true);
         try {
-            // Teeno requests ko parallel ya sequential execute karein
             await Promise.all([
                 fetchAllPosts(),
                 fetchCurrentUser(),
@@ -56,8 +57,21 @@ const MainContextProvider = ({ children }) => {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         initializeApp();
+    }, []);
+
+    // 👇 CUSTOM setUser: Jab bhi user login/signup ya update ho, yeh automatically user ki posts bhi fetch kar lega
+    const setUser = useCallback(async (newUser) => {
+        setUserState(newUser);
+        if (newUser) {
+            // Agar user login ho gaya hai, toh uski personal posts foran fetch karo
+            await fetchAllUserPosts();
+        } else {
+            // Agar logout ho gaya hai, toh posts clear kar do
+            setAllUserPosts([]);
+        }
     }, []);
 
     return (
