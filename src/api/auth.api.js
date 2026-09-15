@@ -1,6 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
+    // http://localhost:4000
+    // https://social-app-backend-inky.vercel.app
     baseURL: "https://social-app-backend-inky.vercel.app/api/auth",
     headers: {
         "Content-Type": "application/json",

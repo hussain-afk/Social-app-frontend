@@ -1,12 +1,20 @@
 import React, { useContext } from 'react';
 import { MainContext } from '../../../context/main.context';
-import { Layers, Sparkles, FolderOpen, Grid, Heart, MessageSquare, Play } from 'lucide-react';
+import usePosts from '../../../hooks/usePosts';
+import { Layers, Sparkles, FolderOpen, Grid, Heart, MessageSquare, Play, Trash2 } from 'lucide-react';
 
 function AllContent() {
     const { allUserPosts, loading } = useContext(MainContext);
-    console.log("allUserPosts", allUserPosts);
-
     const posts = allUserPosts || [];
+
+    const { deleteExistingPost } = usePosts();
+
+    const handleDeleteClick =  async (e, postId) => {
+        e.stopPropagation();
+        console.log("Delete clicked for post ID:", postId);
+        await deleteExistingPost(postId);
+        // 👉 Yahan aap apni delete function/logic likhein ge
+    };
 
     return (
         <div className="w-full max-w-[800px] mx-auto py-6 px-4 sm:px-6 font-sans">
@@ -38,25 +46,23 @@ function AllContent() {
 
             {/* ================= GRID CONTENT STREAM ================= */}
             {loading ? (
-                /* Loading State */
                 <div className="flex flex-col items-center justify-center min-h-[300px] rounded-[28px] border border-white/10 bg-[#121214]/50 backdrop-blur-md">
                     <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin mb-3" />
                     <p className="text-xs font-bold text-white/40 tracking-wider uppercase">Loading gallery...</p>
                 </div>
             ) : posts.length > 0 ? (
-                /* Instagram Style 3-Column Grid */
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                     {posts.map((post) => (
                         <div 
                             key={post._id} 
                             className="group relative aspect-square w-full overflow-hidden rounded-2xl bg-[#161619] border border-white/10 cursor-pointer transition-all duration-300 hover:border-white/30 hover:shadow-lg hover:shadow-black/50"
                         >
-                            {/* Media Rendering (Image or Video) */}
+                            {/* Media Rendering */}
                             {post.mediaType === "video" ? (
                                 <div className="relative w-full h-full">
                                     <video 
                                         src={post.content} 
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-full object-cover"
                                     />
                                     <div className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white">
                                         <Play className="w-3.5 h-3.5 fill-white" />
@@ -66,31 +72,35 @@ function AllContent() {
                                 <img 
                                     src={post.content} 
                                     alt={post.caption || "Post thumbnail"} 
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-full object-cover"
                                 />
                             )}
 
-                            {/* Hover Overlay (Instagram Style Stats) */}
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white">
-                                
-                                {/* Likes Count */}
-                                <div className="flex items-center gap-1.5 font-bold text-xs">
-                                    <Heart className="w-4 h-4 fill-white text-white" />
+                            {/* 👇 ALWAYS VISIBLE DELETE BUTTON (Top-Left Corner) - Mobile & Desktop Friendly */}
+                            <button
+                                type="button"
+                                onClick={(e) => handleDeleteClick(e, post._id)}
+                                title="Delete post"
+                                className="absolute top-2.5 left-2.5 z-20 flex h-8 w-8 items-center justify-center rounded-xl bg-black/70 border border-white/15 text-red-400 backdrop-blur-md hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+
+                            {/* Bottom Gradient Overlay for Likes & Comments (Clean & Always Visible) */}
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 flex items-center justify-between text-white text-[11px] font-bold">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="w-3.5 h-3.5 fill-white text-white" />
                                     <span>{post.likes?.length || 0}</span>
                                 </div>
-
-                                {/* Comments Count */}
-                                <div className="flex items-center gap-1.5 font-bold text-xs">
-                                    <MessageSquare className="w-4 h-4 fill-white text-white" />
+                                <div className="flex items-center gap-1.5">
+                                    <MessageSquare className="w-3.5 h-3.5 fill-white text-white" />
                                     <span>{post.comments?.length || 0}</span>
                                 </div>
-
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                /* Empty State */
                 <div className="flex flex-col items-center justify-center rounded-[28px] border border-white/10 bg-[#121214] p-12 text-center shadow-2xl">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white/40 mb-4 shadow-inner">
                         <FolderOpen className="w-7 h-7" />

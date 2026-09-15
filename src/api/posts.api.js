@@ -53,3 +53,13 @@ export const createPost = async (formData) => {
         throw error;
     }
 }
+
+export const deletePost = async (postId) => {
+    try {
+        const response = await api.delete(`/delete/${postId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        throw error;
+    }
+}
