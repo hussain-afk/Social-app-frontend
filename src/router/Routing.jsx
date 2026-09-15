@@ -29,6 +29,9 @@ function Routing() {
     if (!user) {
       return <Navigate to="/" replace />;
     }
+    if(user){
+      return <Navigate to="/user" replace />;
+    }
 
     return children;
   };
