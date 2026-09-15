@@ -31,10 +31,7 @@ const usePosts = () => {
             const newPost = await createPost(formData);
             toast.success("Post created successfully!");
             // Feed aur user posts dono ko fresh data ke liye sync kar dein
-            await Promise.all([
-                fetchAllPosts(),
-                fetchAllUserPosts ? fetchAllUserPosts() : Promise.resolve()
-            ]);
+            await initializeApp(); // Ye function context mein define hai jo dono fetchAllPosts aur fetchAllUserPosts ko call karega
             return newPost;
         } catch (error) {
             toast.error("Error creating post");

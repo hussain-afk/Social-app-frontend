@@ -168,7 +168,7 @@ function Sidebar() {
                     <button
                         onClick={() => {
                             navigate("/user/create-post");
-                            // setIsOpen(false);
+                            setIsOpen(false);
                         }}
                         className="
                             mb-4
@@ -199,7 +199,7 @@ function Sidebar() {
                     <button
                         onClick={() => {
                             handleRefreshData(); // Fetch latest user data
-                            // setIsOpen(false);
+                            setIsOpen(false);
                         }}
                         className="
                             mb-4
